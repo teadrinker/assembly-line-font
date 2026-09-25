@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Font Test</title>
+    <style>
+        /* @font-face rules injected by script below (with cache-busting) */
+
+        :root {
+            --bg: #1a1a1a;
+            --bg-rgb: 26,26,26;
+            --topbar-rgb: 32,32,32;
+            --topbar-fg: #d4d4d4;
+            --topbar-muted: #666;
+            --fg: #d4d4d4;
+            --accent: #d4936a;
+            --accent-rgb: 212,147,106;
+            --muted: #555;
+            --input-bg: #111;
+        }
+
+        [data-theme="light"] {
+            --bg: #f4f4f9;
+            --bg-rgb: 244,244,249;
+            --topbar-rgb: 38,38,42;
+            --topbar-fg: #eee;
+            --topbar-muted: #999;
+            --fg: #222;
+            --accent: #b8653a;
+            --accent-rgb: 184,101,58;
+            --muted: #aaa;
+            --input-bg: #fff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-family), monospace;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 10px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        /* ---- top bar ---- */
+        .top-bar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+            display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: rgb(var(--topbar-rgb));
+            color: var(--topbar-fg);
+        }
+        .top-bar .font-nav { display: flex; align-items: center; gap: 4px; }
+        .top-bar h1 {
+            font-size: clamp(16px, 3.8vw, 26px);
+            font-weight: 300;
+            letter-spacing: 0.02em;
+            color: var(--accent);
+            margin: 0;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+        .top-bar h1:hover { filter: brightness(1.25); }
+        .top-bar .btn.nav-arrow {
+            font-size: 27px;
+            padding: 4px 4px;
+            color: var(--accent);
+            opacity: 1;
+        }
+        .top-bar .btn.nav-arrow:hover { filter: brightness(1.25); background: transparent; }
+        .top-bar .controls {
+            display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+        }
+        .top-bar .btn {
+            background: transparent;
+            border: none;
+            color: var(--topbar-fg); font-family: inherit; font-size: 14px;
+            padding: 4px 10px; cursor: pointer; border-radius: 4px;
+            opacity: 0.5; transition: opacity 0.2s, background 0.2s;
+        }
+        .top-bar .btn:hover { opacity: 0.8; background: rgba(212,212,212,0.08); }
+        .top-bar .btn.active {
+            opacity: 0.9;
+            background: rgba(212,212,212,0.12);
+        }
+        .top-bar #tight-btn {
+            background: rgba(128,128,128,0.15);
+            margin-left: 14px;
+        }
+        .top-bar #tight-btn:hover {
+            background: rgba(128,128,128,0.25);
+        }
+        .top-bar #tight-btn.active {
+            color: var(--accent);
+            background: rgba(var(--accent-rgb), 0.2);
+            opacity: 1;
+        }
+        .top-bar #tight-btn.active:hover {
+            background: rgba(var(--accent-rgb), 0.3);
+        }
+        .top-bar .btn.old-mono {
+            color: var(--accent);
+            background: rgba(var(--accent-rgb), 0.2);
+            opacity: 1;
+        }
+        .top-bar .btn.old-mono:hover {
+            background: rgba(var(--accent-rgb), 0.3);
+        }
+        .top-bar .sep { color: var(--topbar-muted); opacity: 0.4; margin: 0 2px; }
+        .top-bar .lbl { font-size: 12px; color: var(--topbar-muted); font-weight: 400; }
+
+
+        /* ---- range slider ---- */
+        input[type="range"] {
+            accent-color: var(--accent);
+            background: var(--muted);
+            height: 4px;
+            border-radius: 2px;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 4px;
+            background: var(--muted);
+            border-radius: 2px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            margin-top: -5px;
+            cursor: pointer;
+            border: none;
+        }
+        input[type="range"]::-moz-range-track {
+            height: 4px;
+            background: var(--muted);
+            border-radius: 2px;
+            border: none;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+        }
+
+        /* ---- glyph grid (sample + hover preview) ---- */
+        .glyph-grid {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            gap: 20px;
+            margin: 50px 0 20px;
+            max-width: 95vw;
+        }
+        .sample {
+            font-family: var(--font-family), monospace;
+            white-space: pre-wrap;
+            font-size: 36px;
+            line-height: 1.5;
+            letter-spacing: var(--letter-spacing, 0);
+            overflow-x: auto;
+            text-align: center;
+            margin: 0;
+        }
+
+        /* ---- hover preview ---- */
+        .hover-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-family), monospace;
+            font-size: 200px;
+            line-height: 1;
+            letter-spacing: var(--letter-spacing, 0);
+            color: var(--muted);
+            opacity: 0.22;
+            transition: opacity 0.15s, color 0.15s;
+            user-select: none;
+            border: 1px dashed var(--muted);
+            border-radius: 8px;
+            min-width: 100px;
+            width: 180px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .hover-preview.active {
+            color: var(--accent);
+            opacity: 1;
+        }
+
+        /* character spans in sample */
+        .sample .c {
+            cursor: default;
+            display: inline;
+        }
+        .sample .c:hover {
+            color: var(--accent);
+        }
+
+        /* ---- textarea ---- */
+        .text-input {
+            font-family: var(--font-family), monospace;
+            width: 90%;
+            max-width: 900px;
+            min-height: 300px;
+            padding: 12px 16px;
+            font-size: 36px;
+            line-height: 1.5;
+            letter-spacing: var(--letter-spacing, 0);
+            background: var(--input-bg);
+            color: var(--fg);
+            border: 1px solid var(--muted);
+            border-radius: 6px;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .text-input:focus { border-color: var(--accent); }
+
+        /* ---- info (always regular) ---- */
+        .info {
+            font-family: var(--font-family), monospace;
+            font-weight: 400;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        @media (max-width: 700px) {
+            .sample { font-size: 22px; }
+            .text-input { font-size: 22px; min-height: 225px; }
+            .top-bar { padding: 4px 8px; gap: 4px; }
+            .top-bar .controls { gap: 4px; }
+            .btn { font-size: 12px; padding: 2px 7px; }
+            .btn.nav-arrow { font-size: 24px; padding: 2px 2px; }
+            .glyph-grid { gap: 10px; }
+            .hover-preview { width: 100px; min-width: 80px; }
+        }
+        @media (max-width: 450px) {
+            .sample { font-size: 15px; }
+            .text-input { font-size: 15px; min-height: 175px; }
+            .glyph-grid { gap: 6px; }
+            .hover-preview { width: 70px; min-width: 60px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="font-nav">
+            <button class="btn nav-arrow" id="prev-font" title="Previous font">◂</button>
+            <button class="btn nav-arrow" id="next-font" title="Next font">▸</button>
+            <h1 id="font-title">Assembly Line</h1>
+            <button class="btn" id="tight-btn" title="Toggle tight descender">Tight</button>
+        </div>
+        <div class="controls">
+            <span id="weight-buttons"></span>
+            <input type="range" id="size-slider" min="12" max="60" value="36" step="2">
+            <button class="btn" id="theme-btn" title="Toggle light/dark">◑</button>
+        </div>
+    </div>
+
+    <div class="glyph-grid" id="glyph-grid">
+        <pre class="sample" id="sample-text"></pre>
+        <div class="hover-preview" id="hover-preview">A</div>
+    </div>
+
+    <textarea class="text-input" id="type-area" placeholder="Type here to test the font..."></textarea>
+
+    <div class="info" id="info-line">
+        Typeface inspired by pixel-fonts and 70s hacker culture, made by teadrinker.
+    </div>
+
+    <script>
+        // ---- Font config ----
+        const FONT_CONFIGS = [
+            {
+                id: 'assembly_line',
+                name: 'Assembly Line',
+                tightName: 'Assembly Line Tight',
+                urlPrefix: 'AssemblyLine',
+                tightUrlPrefix: 'AssemblyLineTight',
+                hasTight: true,
+                hasOldMono: false,
+                sizeMul: 1.0,
+                letterSpacing: '0',
+                weights: [
+                    { name: 'thin',    wght: 100, label: 'THIN' },
+                    { name: 'light',   wght: 300, label: 'LIGHT' },
+                    { name: 'regular', wght: 400, label: 'REGULAR' },
+                    { name: 'bold',    wght: 700, label: 'BOLD' },
+                    { name: 'black',   wght: 900, label: 'BLACK' },
+                ],
+            },
+            {
+                id: 'idealist_hacker',
+                name: 'Idealist Hacker',
+                tightName: 'Idealist Hacker Tight',
+                urlPrefix: 'IdealistHacker',
+                tightUrlPrefix: 'IdealistHackerTight',
+                hasTight: true,
+                hasOldMono: true,
+                sizeMul: 1.0,
+                letterSpacing: '0',
+                weights: [
+                    { name: 'thin',    wght: 100, label: 'THIN' },
+                    { name: 'light',   wght: 300, label: 'LIGHT' },
+                    { name: 'regular', wght: 400, label: 'REGULAR' },
+                    { name: 'bold',    wght: 700, label: 'BOLD' },
+                    { name: 'black',   wght: 900, label: 'BLACK' },
+                ],
+            },
+            {
+                id: 'jetbrains_mono',
+                name: 'JetBrains Mono',
+                tightName: null,
+                urlPrefix: 'jetbrains/JetBrainsMono',
+                tightUrlPrefix: null,
+                hasTight: false,
+                hasOldMono: false,
+                sizeMul: 1.12,
+                letterSpacing: '-0.029em',
+                weights: [
+                    { name: 'Thin',      wght: 100, label: 'THIN' },
+                    { name: 'Light',     wght: 300, label: 'LIGHT' },
+                    { name: 'Regular',   wght: 400, label: 'REGULAR' },
+                    { name: 'Bold',      wght: 700, label: 'BOLD' },
+                    { name: 'ExtraBold', wght: 800, label: 'EXTRABOLD' },
+                ],
+            },
+        ];
+
+        // ---- State ----
+        let fontIdx = 0;
+        let tight = false;
+        let jetbrainsActive = false;
+        const MAIN_FONT_COUNT = 2;
+
+        function getCurrentFont() { return jetbrainsActive ? FONT_CONFIGS[2] : FONT_CONFIGS[fontIdx]; }
+        function getFamilyName() { const fc = getCurrentFont(); return (tight && fc.hasTight) ? fc.tightName : fc.name; }
+
+        const OLD_MONO_FAMILY = 'Idealist Hacker Mono Old';
+
+        // ---- Inject ALL @font-face rules upfront + force-load every family (no FOUT on switch) ----
+        const CACHE_BUST = Date.now();
+        const fontFaceStyle = document.createElement('style');
+        fontFaceStyle.id = 'font-face-style';
+        document.head.appendChild(fontFaceStyle);
+        (function buildAllFontFaces() {
+            let css = '';
+            FONT_CONFIGS.forEach(fc => {
+                fc.weights.forEach(w => {
+                    const url = `${fc.urlPrefix}-${w.name}.woff2?cb=${CACHE_BUST}`;
+                    css += `@font-face { font-family: '${fc.name}'; src: url('${url}') format('woff2'); font-weight: ${w.wght}; font-display: block; }\n`;
+                });
+                document.fonts.load(`1em '${fc.name}'`);
+                if (fc.hasTight) {
+                    fc.weights.forEach(w => {
+                        const url = `${fc.tightUrlPrefix}-${w.name}.woff2?cb=${CACHE_BUST}`;
+                        css += `@font-face { font-family: '${fc.tightName}'; src: url('${url}') format('woff2'); font-weight: ${w.wght}; font-display: block; }\n`;
+                    });
+                    document.fonts.load(`1em '${fc.tightName}'`);
+                }
+            });
+            css += `@font-face { font-family: '${OLD_MONO_FAMILY}'; src: url('Idealist-Hacker-Mono-old.woff?cb=${CACHE_BUST}') format('woff'); font-display: block; }\n`;
+            fontFaceStyle.textContent = css;
+            document.fonts.load(`1em '${OLD_MONO_FAMILY}'`);
+        })();
+
+        function applyFontFamily(family) {
+            document.documentElement.style.setProperty('--font-family', `'${family}'`);
+        }
+
+        const weightContainer = document.getElementById('weight-buttons');
+
+        function buildWeightButtons() {
+            const fc = getCurrentFont();
+            weightContainer.innerHTML = '';
+            fc.weights.forEach(w => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.dataset.weight = w.wght;
+                btn.style.fontWeight = w.wght;
+                btn.textContent = w.label;
+                weightContainer.appendChild(btn);
+            });
+            setWeight(currentWeight);
+        }
+
+        let fontSwitchBusy = false;
+        async function switchFont() {
+            if (fontSwitchBusy) return;
+            fontSwitchBusy = true;
+            const fc = getCurrentFont();
+            if (oldMono && !fc.hasOldMono) { oldMono = false; tight = savedTight; }
+            const family = getFamilyName();
+            await document.fonts.load(`1em '${family}'`);
+            applyFontFamily(family);
+            document.documentElement.style.setProperty('--letter-spacing', fc.letterSpacing);
+            document.getElementById('font-title').textContent = fc.name;
+            updateTightButton();
+            buildWeightButtons();
+            applyCurrentSize();
+            fontSwitchBusy = false;
+        }
+
+        function updateTightButton() {
+            const btn = document.getElementById('tight-btn');
+            const fc = getCurrentFont();
+            btn.style.display = fc.hasTight ? '' : 'none';
+            btn.classList.toggle('active', tight);
+        }
+
+        // ---- Font nav ----
+        document.getElementById('prev-font').addEventListener('click', () => {
+            if (jetbrainsActive) jetbrainsActive = false;
+            else fontIdx = (fontIdx - 1 + MAIN_FONT_COUNT) % MAIN_FONT_COUNT;
+            switchFont();
+        });
+        document.getElementById('next-font').addEventListener('click', () => {
+            if (jetbrainsActive) jetbrainsActive = false;
+            else fontIdx = (fontIdx + 1) % MAIN_FONT_COUNT;
+            switchFont();
+        });
+
+        // ---- Title click swaps font, shift-click toggles JetBrains ----
+        document.getElementById('font-title').addEventListener('click', (e) => {
+            if (e.shiftKey) {
+                jetbrainsActive = !jetbrainsActive;
+            } else {
+                if (jetbrainsActive) jetbrainsActive = false;
+                else fontIdx = (fontIdx + 1) % MAIN_FONT_COUNT;
+            }
+            switchFont();
+        });
+
+        // ---- Tight toggle ----
+        document.getElementById('tight-btn').addEventListener('click', () => {
+            if (!getCurrentFont().hasTight) return;
+            tight = !tight;
+            switchFont();
+        });
+
+        // ---- Old mono toggle (shift-click heaviest weight button) ----
+        let oldMono = false;
+        let savedTight = false;
+
+        async function toggleOldMono() {
+            oldMono = !oldMono;
+            if (oldMono) {
+                savedTight = tight;
+                await document.fonts.load(`1em '${OLD_MONO_FAMILY}'`);
+                applyFontFamily(OLD_MONO_FAMILY);
+                document.documentElement.style.setProperty('--letter-spacing', '0');
+                document.getElementById('font-title').textContent = 'Idealist Hacker Mono (old)';
+                tight = false;
+                updateTightButton();
+                document.getElementById('tight-btn').style.display = 'none';
+            } else {
+                tight = savedTight;
+                document.getElementById('tight-btn').style.display = getCurrentFont().hasTight ? '' : 'none';
+                await switchFont();
+            }
+            const btns = weightContainer.querySelectorAll('.btn');
+            const lastBtn = btns[btns.length - 1];
+            if (lastBtn) lastBtn.classList.toggle('old-mono', oldMono);
+        }
+
+        weightContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn');
+            if (!btn) return;
+            const wght = +btn.dataset.weight;
+            const fc = getCurrentFont();
+            const btns = [...weightContainer.querySelectorAll('.btn')];
+            const lastIdx = btns.length - 1;
+            const isHeaviest = (btns.indexOf(btn) === lastIdx);
+
+            if (isHeaviest && e.shiftKey && fc.hasOldMono) {
+                toggleOldMono();
+            } else {
+                if (oldMono) {
+                    oldMono = false;
+                    tight = savedTight;
+                    btns[lastIdx]?.classList.remove('old-mono');
+                    document.getElementById('tight-btn').style.display = fc.hasTight ? '' : 'none';
+                    switchFont().then(() => setWeight(wght));
+                } else {
+                    setWeight(wght);
+                }
+            }
+        });
+
+        // ---- Weight switching ----
+        let currentWeight = 400;
+        const body = document.body;
+        const sample = document.getElementById('sample-text');
+        const textarea = document.getElementById('type-area');
+        const sizeSlider = document.getElementById('size-slider');
+        const hoverPreview = document.getElementById('hover-preview');
+
+        function setWeight(wght) {
+            const fc = getCurrentFont();
+            let best = fc.weights[0].wght;
+            let bestDist = Math.abs(fc.weights[0].wght - wght);
+            for (const w of fc.weights) {
+                const dist = Math.abs(w.wght - wght);
+                if (dist < bestDist) { best = w.wght; bestDist = dist; }
+            }
+            currentWeight = best;
+            body.style.fontWeight = best;
+            sample.style.fontWeight = best;
+            textarea.style.fontWeight = best;
+            hoverPreview.style.fontWeight = best;
+
+            weightContainer.querySelectorAll('.btn').forEach(b => {
+                b.classList.toggle('active', +b.dataset.weight === best);
+            });
+        }
+
+        // ---- Size slider + preview sync ----
+        let currentSizePx = +sizeSlider.value;
+
+        function applyCurrentSize() {
+            const fc = getCurrentFont();
+            const effective = Math.round(currentSizePx * fc.sizeMul);
+            sample.style.fontSize = effective + 'px';
+            textarea.style.fontSize = effective + 'px';
+            textarea.style.lineHeight = (currentSizePx * 1.4)+'px';
+            sample.style.lineHeight = (currentSizePx * 1.4)+'px';
+        }
+
+        function syncPreviewSize() {
+            const h = sample.offsetHeight;
+            if (h > 0) {
+                hoverPreview.style.fontSize = Math.round(h * 0.65) + 'px';
+            }
+        }
+        new ResizeObserver(() => syncPreviewSize()).observe(sample);
+
+        applyCurrentSize();
+        sizeSlider.addEventListener('input', () => {
+            currentSizePx = +sizeSlider.value;
+            applyCurrentSize();
+        });
+
+        // ---- Sample text (specific order) ----
+        const SAMPLE_LINES = [
+            " 0 1 2 3 4 5 6 7 8 9 ^ \" ' , . ",
+            " A B C D E F G H I J K L M ; : ",
+            " N O P Q R S T U V W X Y Z ( ) ",
+            " a b c d e f g h i j k l m [ ] ",
+            " n o p q r s t u v w x y z { } ",
+            " @ # $ % & * + - = ! ? / \\ < > ",
+        ];
+
+        function buildSample() {
+            let html = '';
+            for (const line of SAMPLE_LINES) {
+                for (const ch of line) {
+                    if (ch === ' ') {
+                        html += ' ';
+                    } else {
+                        html += `<span class="c" data-char="${ch.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}">${ch.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>`;
+                    }
+                }
+                html += '\n';
+            }
+            sample.innerHTML = html;
+        }
+        buildSample();
+
+        // ---- Hover preview ----
+        let pinnedChar = 'A';
+        hoverPreview.textContent = pinnedChar;
+
+        sample.addEventListener('mouseover', (e) => {
+            const span = e.target.closest('.c');
+            if (span) {
+                hoverPreview.textContent = span.getAttribute('data-char');
+                hoverPreview.classList.add('active');
+            }
+        });
+        sample.addEventListener('mouseout', (e) => {
+            const span = e.target.closest('.c');
+            if (span) {
+                hoverPreview.textContent = pinnedChar;
+                hoverPreview.classList.remove('active');
+            }
+        });
+        sample.addEventListener('click', (e) => {
+            const span = e.target.closest('.c');
+            if (span) {
+                pinnedChar = span.getAttribute('data-char');
+                hoverPreview.textContent = pinnedChar;
+            }
+        });
+
+        // ---- Textarea ----
+        textarea.value = 'HOW VEXINGLY QUICK DAFT ZEBRAS JUMP!\nhow vexingly quick daft zebras jump!\n\n0123456789 !?@()[]{}\n+-*/%=<>|&^~#.,:;\'"`_\\\\';
+
+        // ---- Theme ----
+        const themeBtn = document.getElementById('theme-btn');
+        themeBtn.addEventListener('click', () => {
+            const root = document.documentElement;
+            if (root.getAttribute('data-theme') === 'light') {
+                root.removeAttribute('data-theme');
+                themeBtn.textContent = '◑';
+            } else {
+                root.setAttribute('data-theme', 'light');
+                themeBtn.textContent = '◐';
+            }
+        });
+
+        // ---- Init ----
+        switchFont().then(() => setWeight(400));
+    </script>
+</body>
+</html>
