@@ -10,4 +10,6 @@ This repo contains both fonts exported to ttf + woff2 in multiple weights (+tigh
 
 See [original repo](https://github.com/teadrinker/idealist-hacker-mono-font) for more info. 
 
+License: [SIL Open Font License](https://scripts.sil.org/OFL)
+
 
